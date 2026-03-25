@@ -9,8 +9,8 @@ def admm_solver_rho(D, Phi, q, rho_0 = 10, max_iter = 50000, tol_abs = 1e-4, tol
     '''
     Implementación del algoritmo ADMM para resolver el problema propuesto en la Sección 3.2
     Resuelve el problema:
-        min  q^T x + I_C(z)
-        s.a. D x - z = 0
+        min  q^T y + I_C(z)
+        s.a. D y - z = 0
     '''
     
     # Cargamos las dimensiones del problema. Pondremos los nombres en mayúsculas
@@ -163,25 +163,25 @@ N_escenarios = int((n_activos + 1) / (eps * beta) - 1)
     usando una cópula normal.
 '''
 
-def genera_aleatorios_correl(n_activos, N_escenarios, correl=np.array(1)):
+def genera_aleatorios_correl(n_activos, N_escenarios, correl=None):
+  # Nos aseguramos de que los números sean del tipo int
     n_activos = int(n_activos)
-    
+    N_escenarios = int(N_escenarios)
+
+  # Si solo hay un activo, simplemente lanzamos aleatorios
     if n_activos == 1:
         return np.random.normal(0, 1, N_escenarios)
     
     else:
-        
-        N_escenarios = int(N_escenarios)
-        
-        correl = np.array(correl)
-        
-        # Factorización de Cholesky de la matriz de correlaciones
-        
+  # Si hay varios activos, usamos la Id en caso de no tener matriz de correlaciones
+        if correl is None:
+            correl = np.eye(n_activos) 
+        else:
+            correl = np.array(correl)
+
+      # Usamos la matriz de Cholesky para correlacionar los aleatorios
         L = la.cholesky(correl, lower = True)
-        
-        # Aleatorios correlacionados
-        
-        return L @ np.random.normal(0, 1, (n_activos, N_escenarios)) 
+        return L @ np.random.normal(0, 1, (n_activos, N_escenarios))
         
 
 # Como son bajo el mismo subyacente, la correlación es la identidad y se puede
